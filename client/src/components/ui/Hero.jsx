@@ -18,7 +18,7 @@ const Hero = () => {
       </div>
       <div className="flex flex-wrap justify-center gap-4 text-sm max-sm:text-xs">
         <button
-          onClick={() => navigate("/ai/write-article")}
+          onClick={() => navigate("/ai/dashboard")}
           className="bg-gradient text-white px-10 py-3 rounded-lg hover:scale-102 active:scale-95 transition cursor-pointer">
           Start creating now
         </button>

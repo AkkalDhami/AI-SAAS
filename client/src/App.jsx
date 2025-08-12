@@ -5,18 +5,23 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import WriteArticle from "./pages/WriteArticle";
 import BlogTitles from "./pages/BlogTitles";
+import GenerateImages from "./pages/GenerateImages";
+import RemoveBg from "./pages/RemoveBg";
+import ReviewResume from "./pages/ReviewResume";
+import Community from "./pages/Community";
+import RemoveObject from "./pages/RemoveObject";
 
 const App = () => {
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <AppLayout />,
+      element: <Home />,
       errorElement: <div>404</div>,
+    },
+    {
+      path: "/ai",
+      element: <AppLayout />,
       children: [
-        {
-          path: "/",
-          element: <Home />,
-        },
         {
           path: "/ai/write-article",
           element: <WriteArticle />,
@@ -29,10 +34,29 @@ const App = () => {
           path: "/ai/blog-titles",
           element: <BlogTitles />,
         },
+        {
+          path: "/ai/generate-images",
+          element: <GenerateImages />,
+        },
+        {
+          path: "/ai/remove-background",
+          element: <RemoveBg />,
+        },
+        {
+          path: "/ai/remove-object",
+          element: <RemoveObject />,
+        },
+        {
+          path: "/ai/review-resume",
+          element: <ReviewResume />,
+        },
+        {
+          path: "/ai/community",
+          element: <Community />,
+        },
       ],
     },
   ]);
-
   return <RouterProvider router={router} />;
 };
 
