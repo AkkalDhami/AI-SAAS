@@ -15,49 +15,49 @@ import { NavLink } from "react-router-dom";
 
 const Sidebar = ({ sidebaropen, setSidebaropen }) => {
   const { user } = useUser();
-  const { signOut, openUserProfile } = useClerk();
-  
+  const { signOut } = useClerk();
+
   const navItems = [
     {
       name: "Dashboard",
       path: "/ai/dashboard",
-      Icon: House,
+      Icon: <House />,
     },
     {
       name: "Write Article",
       path: "/ai/write-article",
-      Icon: SquarePen,
+      Icon: <SquarePen />,
     },
     {
       name: "Blog Titles",
       path: "/ai/blog-titles",
-      Icon: Hash,
+      Icon: <Hash />,
     },
     {
       name: "Generate Images",
       path: "/ai/generate-images",
-      Icon: Image,
+      Icon: <Image />,
     },
     {
       name: "Remove Background",
       path: "/ai/remove-background",
-      Icon: Eraser,
+      Icon: <Eraser />,
     },
     {
       name: "Remove Object",
       path: "/ai/remove-object",
-      Icon: Scissors,
+      Icon: <Scissors />,
     },
 
     {
       name: "Review Resume",
       path: "/ai/review-resume",
-      Icon: FileText,
+      Icon: <FileText />,
     },
     {
       name: "Community",
       path: "/ai/community",
-      Icon: Users,
+      Icon: <Users />,
     },
   ];
 
@@ -86,9 +86,7 @@ const Sidebar = ({ sidebaropen, setSidebaropen }) => {
                     isActive ? "bg-gradient text-white" : ""
                   }`
                 }>
-                {({ isActive }) => (
-                  <Icon className={isActive ? "text-white" : "text-gray-500"} />
-                )}
+                {Icon}
                 <span>{name}</span>
               </NavLink>
             ))}
