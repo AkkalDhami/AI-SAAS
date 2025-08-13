@@ -10,6 +10,8 @@ import RemoveBg from "./pages/RemoveBg";
 import ReviewResume from "./pages/ReviewResume";
 import Community from "./pages/Community";
 import RemoveObject from "./pages/RemoveObject";
+import { useAuth } from "@clerk/clerk-react";
+import { useEffect } from "react";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -57,6 +59,14 @@ const App = () => {
       ],
     },
   ]);
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    getToken()
+      .then((token) => console.log(token))
+      .catch((err) => console.log(err));
+  }, []);
+
   return <RouterProvider router={router} />;
 };
 
