@@ -1,8 +1,11 @@
 
 import OpenAI from "openai";
 import { v2 as cloudinary } from "cloudinary";
-import { insertArticleData, insertImageData } from "../services/aiServices.js";
+import { insertArticleData, insertImageData, insertRemoveImageBgData, insertRemoveImageObjectData, insertResumeReviewData } from "../services/aiServices.js";
 import axios from "axios";
+
+import fs from 'fs'
+import pdf from "pdf-parse/lib/pdf-parse.js";
 
 const ai = new OpenAI({
     apiKey: process.env.GEMINI_API_KEY,
@@ -149,7 +152,145 @@ export const generateImage = async (req, res) => {
 
         res.json({
             success: true,
-            secure_url
+            content: secure_url
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+export const removeImageBackground = async (req, res) => {
+    try {
+        const { userId } = req.auth();
+        const { image } = req.file;
+
+        const plan = req.plan;
+
+        if (plan !== 'premium') {
+            return res.json({
+                success: false,
+                message: "This feature is only available to premium users."
+            });
+        }
+
+
+
+        const { secure_url } = await cloudinary.uploader.upload(image.path, {
+            transformation: [{
+                effect: 'background_removal',
+                background_removal: 'remove_the_background'
+            }]
+        })
+
+        const prompt = 'Remove the background from this image';
+        await insertRemoveImageBgData({ userId, secure_url, prompt, type: 'image' });
+
+        res.json({
+            success: true,
+            content: secure_url
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+export const removeImageObject = async (req, res) => {
+    try {
+        const { userId } = req.auth();
+        const { image } = req.file;
+        const { object } = req.body;
+        const plan = req.plan;
+
+        if (plan !== 'premium') {
+            return res.json({
+                success: false,
+                message: "This feature is only available to premium users."
+            });
+        }
+
+        const { public_id } = await cloudinary.uploader.upload(image.path)
+
+        const imageUrl = cloudinary.url(public_id, {
+            transformation: [{
+                effect: `gen_remove:${object}`
+            }],
+            resource_type: 'image'
+        })
+
+        const prompt = `Remove the ${object} from this image`
+        await insertRemoveImageObjectData({ userId, imageUrl, prompt, type: 'image' });
+
+        res.json({
+            success: true,
+            content: imageUrl
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+export const resumeReview = async (req, res) => {
+    try {
+        const { userId } = req.auth();
+        // const { file } = req.file;
+        const file = req.file;
+        const plan = req.plan;
+
+        if (plan !== 'premium') {
+            return res.json({
+                success: false,
+                message: "This feature is only available to premium users."
+            });
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            return res.json({
+                success: false,
+                message: "File size should be less than 5MB"
+            })
+        }
+
+        const dataBuffer = fs.readFileSync(file.path);
+        const pdfData = await pdf(dataBuffer)
+
+        const prompt = `Review the following resume and provide constructive feedback on its strengths, weaknesses, and areas for improvement. Resume Content:\n\n ${pdfData.text}`
+
+
+        const response = await ai.chat.completions.create({
+            model: "gemini-2.5-flash",
+            reasoning_effort: "low",
+            messages: [
+                {
+                    role: "user",
+                    content: prompt
+                },
+            ],
+            temperature: 0.7,
+            max_tokens: 1000,
+        });
+
+        const content = response.choices[0].message.content;
+
+        await insertResumeReviewData({ userId, content, type: 'resume-review' });
+
+        res.json({
+            success: true,
+            content
         });
 
     } catch (error) {
