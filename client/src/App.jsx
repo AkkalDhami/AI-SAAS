@@ -12,6 +12,7 @@ import Community from "./pages/Community";
 import RemoveObject from "./pages/RemoveObject";
 import { useAuth } from "@clerk/clerk-react";
 import { useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -59,14 +60,8 @@ const App = () => {
       ],
     },
   ]);
-  const { getToken } = useAuth();
 
-  useEffect(() => {
-    getToken()
-      .then((token) => console.log(token))
-      .catch((err) => console.log(err));
-  }, []);
-
+  <Toaster />;
   return <RouterProvider router={router} />;
 };
 
