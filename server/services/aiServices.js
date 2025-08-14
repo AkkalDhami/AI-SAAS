@@ -39,3 +39,31 @@ export const insertResumeReviewData = async ({ userId, content, type, }) => {
         console.error("Error inserting resume data:", error);
     }
 };
+
+export const getUserCreationsByUserId = async (userId) => {
+    try {
+        const creations = await db`SELECT * FROM creations WHERE user_id = ${userId} ORDER BY created_at DESC`;
+        return creations;
+    } catch (error) {
+        console.error("Error getting user creations:", error);
+        return [];
+    }
+}
+
+export const getAllPublishedCreations = async () => {
+    try {
+        const creations = await db`SELECT * FROM creations WHERE publish = true ORDER BY created_at DESC`;
+        return creations;
+    } catch (error) {
+        console.error("Error getting published creations:", error);
+        return [];
+    }
+}
+
+export const updateCreationLikes = async (id, formattedArray) => {
+    try {
+        await db`UPDATE creations SET likes = ${formattedArray}::text[] WHERE id = ${id}`;
+    } catch (error) {
+        console.error("Error updating creation likes:", error);
+    }
+};
