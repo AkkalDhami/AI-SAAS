@@ -1,6 +1,13 @@
 import { HashIcon, Sparkle, Sparkles } from "lucide-react";
 import React, { useState } from "react";
 
+import axios from "axios";
+import { useAuth } from "@clerk/clerk-react";
+import toast from "react-hot-toast";
+import Markdown from "react-markdown";
+import Loader from "../components/ui/Loader";
+axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
+
 const BlogTitles = () => {
   const blogCategories = [
     "Technology",
@@ -15,10 +22,38 @@ const BlogTitles = () => {
   ];
   const [isSelected, setIsSelected] = useState(blogCategories[0]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [content, setContent] = useState("");
+
+  const { getToken } = useAuth();
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    console.log(input, isSelected);
+    try {
+      setLoading(true);
+      const prompt = `Write a blog title about ${input} in ${isSelected}.`;
+
+      const { data } = await axios.post(
+        "/api/ai/generate-blog-title",
+        { prompt },
+        {
+          headers: {
+            Authorization: `Bearer ${await getToken()}`,
+          },
+        }
+      );
+      console.log(data);
+      if (data.success) {
+        setContent(data.content);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <div className="h-full overflow-y-auto p-6 flex items-start flex-wrap gap-4 text-slate-700">
@@ -54,7 +89,7 @@ const BlogTitles = () => {
           ))}
         </div>
         <button className="w-full flex justify-center items-center gap-2 bg-gradient text-white px-4 py-2 mt-6 text-sm rounded-lg cursor-pointer">
-          <Sparkles className="w-4 h-4" />
+          {loading ? <Loader /> : <Sparkles className="w-4 h-4" />}
           Generate Title
         </button>
       </form>
@@ -63,12 +98,21 @@ const BlogTitles = () => {
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-semibold">Generated titles</h1>
         </div>
-        <div className="flex-1 flex justify-center items-center">
-          <div className="text-sm flex flex-col items-center gap-5 text-gray-400">
-            <Sparkles className="w-8 h-8 text-pink-500" />
-            <p>Enter a topic and click “Generated title” to get started</p>
+
+        {!content ? (
+          <div className="flex-1 flex justify-center items-center">
+            <div className="text-sm flex flex-col items-center gap-5 text-gray-400">
+              <Sparkles className="w-8 h-8 text-pink-500" />
+              <p>Enter a topic and click “Generated title” to get started</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto">
+            <div className="reset-tw">
+              <Markdown> {content}</Markdown>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

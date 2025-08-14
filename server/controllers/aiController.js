@@ -71,7 +71,7 @@ export const generateBlogTitle = async (req, res) => {
     try {
         const { userId } = req.auth();
         const { prompt } = req.body;
-
+        console.log(req.body);
         const plan = req.plan;
         const free_usage = req.free_usage;
 
@@ -125,7 +125,7 @@ export const generateImage = async (req, res) => {
     try {
         const { userId } = req.auth();
         const { prompt, publish } = req.body;
-
+        console.log(req.body);
         const plan = req.plan;
 
         if (plan !== 'premium') {

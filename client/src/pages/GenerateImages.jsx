@@ -1,6 +1,13 @@
 import { Image, Sparkles, SparklesIcon } from "lucide-react";
 import React, { useState } from "react";
 
+import axios from "axios";
+import { useAuth } from "@clerk/clerk-react";
+import toast from "react-hot-toast";
+import Markdown from "react-markdown";
+import Loader from "../components/ui/Loader";
+axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
+
 const GenerateImages = () => {
   const imageCategories = [
     "Realistic",
@@ -14,12 +21,40 @@ const GenerateImages = () => {
   ];
   const [isSelected, setIsSelected] = useState(imageCategories[0]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [content, setContent] = useState("");
+
+  const { getToken } = useAuth();
 
   const [publish, setPublish] = useState(false);
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    console.log(input, isSelected);
+    try {
+      setLoading(true);
+      const prompt = `Generate an image of ${input} in ${isSelected} style.`;
+
+      const { data } = await axios.post(
+        "/api/ai/generate-image",
+        { prompt, publish },
+        {
+          headers: {
+            Authorization: `Bearer ${await getToken()}`,
+          },
+        }
+      );
+      console.log(data);
+      if (data.success) {
+        setContent(data.content);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -72,7 +107,7 @@ const GenerateImages = () => {
         </div>
 
         <button className="w-full flex justify-center items-center gap-2 bg-gradient text-white px-4 py-2 mt-6 text-sm rounded-lg cursor-pointer">
-          <SparklesIcon className="w-4 h-4" />
+          {loading ? <Loader /> : <SparklesIcon className="w-4 h-4" />}
           Generate Image
         </button>
       </form>
@@ -81,12 +116,22 @@ const GenerateImages = () => {
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-semibold">Generated image</h1>
         </div>
-        <div className="flex-1 flex justify-center items-center">
-          <div className="text-sm flex flex-col items-center gap-5 text-gray-400">
-            <Sparkles className="w-8 h-8 text-purple-500" />
-            <p>Enter a topic and click “Generated image” to get started</p>
+        {!content ? (
+          <div className="flex-1 flex justify-center items-center">
+            <div className="text-sm flex flex-col items-center gap-5 text-gray-400">
+              <Sparkles className="w-8 h-8 text-purple-500" />
+              <p>Enter a topic and click “Generated image” to get started</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="h-full mt-8">
+            <img
+              src={content}
+              alt="image"
+              className="w-full h-full object-contain"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
