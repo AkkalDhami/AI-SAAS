@@ -88,7 +88,7 @@ const BlogTitles = () => {
             </span>
           ))}
         </div>
-        <button className="w-full flex justify-center items-center gap-2 bg-gradient text-white px-4 py-2 mt-6 text-sm rounded-lg cursor-pointer">
+        <button disabled={loading} className="w-full flex justify-center items-center gap-2 bg-gradient text-white px-4 py-2 mt-6 text-sm rounded-lg cursor-pointer">
           {loading ? <Loader /> : <Sparkles className="w-4 h-4" />}
           Generate Title
         </button>

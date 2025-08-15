@@ -61,8 +61,12 @@ const App = () => {
     },
   ]);
 
-  <Toaster />;
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <Toaster />
+      <RouterProvider router={router} />
+    </>
+  );
 };
 
 export default App;

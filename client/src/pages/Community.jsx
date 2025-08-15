@@ -1,13 +1,63 @@
 import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { dummyPublishedCreationData } from "../assets/assets";
 import { Heart } from "lucide-react";
+
+import axios from "axios";
+import { useAuth } from "@clerk/clerk-react";
+import toast from "react-hot-toast";
+axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 
 const Community = () => {
   const [creations, setCreations] = useState([]);
   const user = useUser();
+
+  const [loading, setLoading] = useState(true);
+
+  const { getToken } = useAuth();
+
   const fetchCreations = async () => {
-    setCreations(dummyPublishedCreationData);
+    try {
+      setLoading(true);
+      const { data } = await axios.get("/api/user/get-published-creations", {
+        headers: {
+          Authorization: `Bearer ${await getToken()}`,
+        },
+      });
+      console.log(data);
+      setCreations(data.creations);
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const imageLikeToggle = async (id) => {
+    try {
+      setLoading(true);
+      const { data } = await axios.post(
+        "/api/user/toggle-like-creation",
+        { id },
+        {
+          headers: {
+            Authorization: `Bearer ${await getToken()}`,
+          },
+        }
+      );
+      console.log(data);
+      if (data.success) {
+        toast.error(data.message);
+        await fetchCreations();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -15,11 +65,11 @@ const Community = () => {
     fetchCreations();
   }, [user]);
 
-  return (
+  return !loading ? (
     <div className="flex-1 h-full flex flex-col gap-4 p-6 ">
       <h1 className="text-2xl font-semibold">Creations</h1>
       <div className="bg-white h-full w-full rounded-xl">
-        {creations.map((creation) => (
+        {creations?.map((creation) => (
           <div
             key={creation.id}
             className="relative group inline-block pl-3 pt-3 w-full sm:max-w-1/2 lg:max-w-1/3">
@@ -36,6 +86,7 @@ const Community = () => {
               <div className="flex gap-1 items-center">
                 <p>{creation.likes.length}</p>
                 <Heart
+                  onClick={() => imageLikeToggle(creation.id)}
                   className={`min-w-5 h-5 hover:scale-110 cursor-pointer ${
                     creation.likes.includes(user.id)
                       ? "text-red-500"
@@ -47,6 +98,10 @@ const Community = () => {
           </div>
         ))}
       </div>
+    </div>
+  ) : (
+    <div className="h-full flex items-center justify-center">
+      <span className="w-12 h-12 rounded-full border-4 border-t-transparent animate-spin"></span>
     </div>
   );
 };

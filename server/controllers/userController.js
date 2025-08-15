@@ -3,14 +3,10 @@ import { getAllPublishedCreations, getUserCreationsByUserId, updateCreationLikes
 export const getUserCreation = async (req, res) => {
     try {
         const { userId } = req.auth();
-        // const user = await clerkClient.users.getUser(userId);
         const creations = await getUserCreationsByUserId(userId);
         res.json({
             success: true,
-            data: {
-                user,
-                creations
-            }
+            data: creations
         })
     } catch (error) {
         console.error(error);

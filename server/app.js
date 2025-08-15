@@ -16,8 +16,7 @@ async function startServer() {
     app.use(express.json());
     app.use(clerkMiddleware());
 
-    // Health check endpoint
-    app.get("/health", (req, res) => {
+    app.get("/", (req, res) => {
         res.json({ status: "ok" });
     });
 

@@ -10,6 +10,6 @@ router.post("/generate-blog-title", auth, generateBlogTitle);
 router.post("/generate-image", auth, generateImage);
 router.post("/remove-image-background", upload.single("image"), auth, removeImageBackground);
 router.post("/remove-image-object", upload.single("image"), auth, removeImageObject);
-router.post("/resume-review", upload.single("file"), auth, resumeReview);
+router.post("/review-resume", upload.single("resume"), auth, resumeReview);
 
 export default router;

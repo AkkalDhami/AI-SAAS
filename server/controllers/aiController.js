@@ -207,7 +207,7 @@ export const removeImageBackground = async (req, res) => {
 export const removeImageObject = async (req, res) => {
     try {
         const { userId } = req.auth();
-        const { image } = req.file;
+        const image = req.file;
         const { object } = req.body;
         const plan = req.plan;
 
@@ -247,8 +247,7 @@ export const removeImageObject = async (req, res) => {
 export const resumeReview = async (req, res) => {
     try {
         const { userId } = req.auth();
-        // const { file } = req.file;
-        const file = req.file;
+        const resume = req.file;
         const plan = req.plan;
 
         if (plan !== 'premium') {
@@ -258,14 +257,14 @@ export const resumeReview = async (req, res) => {
             });
         }
 
-        if (file.size > 5 * 1024 * 1024) {
+        if (resume.size > 5 * 1024 * 1024) {
             return res.json({
                 success: false,
-                message: "File size should be less than 5MB"
+                message: "Resume size should be less than 5MB"
             })
         }
 
-        const dataBuffer = fs.readFileSync(file.path);
+        const dataBuffer = fs.readFileSync(resume.path);
         const pdfData = await pdf(dataBuffer)
 
         const prompt = `Review the following resume and provide constructive feedback on its strengths, weaknesses, and areas for improvement. Resume Content:\n\n ${pdfData.text}`
